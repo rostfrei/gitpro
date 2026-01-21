@@ -82,41 +82,44 @@ def apply_git_config(profile, cfg):
 
 
 def main():
-    if len(sys.argv) < 2:
-        result = subprocess.run(['git'])
-        sys.exit(result.returncode)
-    
-    git_args = sys.argv[1:]
-    remote_commands = ['clone', 'pull', 'push', 'fetch']
-    url = find_url_in_args(git_args)
-    cfg = load_config()
-    
-    if cfg and git_args[0] in remote_commands:
-        if not url:
-            url = get_repo_url()
-        if url:
-            profile = select_profile(cfg, url)
-            key = expand(cfg.get(profile, "sshKeyPath"))
-            ssh_cmd = f"ssh -i {key} -o IdentitiesOnly=yes"
-            env = os.environ.copy()
-            env['GIT_SSH_COMMAND'] = ssh_cmd
-            
-            result = subprocess.run(['git'] + git_args, env=env)
-            
-            if git_args[0] == 'clone' and result.returncode == 0:
-                # Parse cloned directory
-                if len(git_args) > 2:
-                    cloned_dir = git_args[2]
-                else:
-                    cloned_dir = url.split('/')[-1].replace('.git', '')
-                os.chdir(cloned_dir)
-                apply_git_config(profile, cfg)
-            
+    try:
+        if len(sys.argv) < 2:
+            result = subprocess.run(['git'])
             sys.exit(result.returncode)
-    
-    # No config or not a remote command or no url
-    result = subprocess.run(['git'] + git_args)
-    sys.exit(result.returncode)
+        
+        git_args = sys.argv[1:]
+        remote_commands = ['clone', 'pull', 'push', 'fetch']
+        url = find_url_in_args(git_args)
+        cfg = load_config()
+        
+        if cfg and git_args[0] in remote_commands:
+            if not url:
+                url = get_repo_url()
+            if url:
+                profile = select_profile(cfg, url)
+                key = expand(cfg.get(profile, "sshKeyPath"))
+                ssh_cmd = f"ssh -i {key} -o IdentitiesOnly=yes"
+                env = os.environ.copy()
+                env['GIT_SSH_COMMAND'] = ssh_cmd
+                
+                result = subprocess.run(['git'] + git_args, env=env)
+                
+                if git_args[0] == 'clone' and result.returncode == 0:
+                    # Parse cloned directory
+                    if len(git_args) > 2:
+                        cloned_dir = git_args[2]
+                    else:
+                        cloned_dir = url.split('/')[-1].replace('.git', '')
+                    os.chdir(cloned_dir)
+                    apply_git_config(profile, cfg)
+                
+                sys.exit(result.returncode)
+        
+        # No config or not a remote command or no url
+        result = subprocess.run(['git'] + git_args)
+        sys.exit(result.returncode)
+    except KeyboardInterrupt:
+        sys.exit(130)
 
 
 if __name__ == "__main__":
