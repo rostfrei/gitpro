@@ -81,8 +81,10 @@ matchingRepos = ["github\\.com[:/]your-username/.*"]
 Use `gitpro` as a drop-in replacement for `git`:
 
 ```bash
-gitpro <git-command> [args]
+gitpro [git-command [args]]
 ```
+
+If no command is provided, it runs plain `git`.
 
 - For commands with URLs (e.g., `clone`), the wrapper detects the URL and applies the matching profile.
 - For remote commands in existing repos (e.g., `pull`), it uses the origin remote URL.

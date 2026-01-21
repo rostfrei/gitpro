@@ -83,8 +83,8 @@ def apply_git_config(profile, cfg):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: gitpro <git command>", file=sys.stderr)
-        sys.exit(1)
+        result = subprocess.run(['git'])
+        sys.exit(result.returncode)
     
     git_args = sys.argv[1:]
     remote_commands = ['clone', 'pull', 'push', 'fetch']
