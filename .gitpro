@@ -1,0 +1,22 @@
+[default]
+sshKeyPath = "~/.ssh/default_key"
+email = "user@example.com"
+userName = "Your Name"
+
+[work]
+sshKeyPath = "~/.ssh/work_key"
+email = "user@company.com"
+userName = "Your Name"
+matchingRepos = ["github\\.com[:/]org1/.*", "github\\.com[:/]org2/.*", "github\\.com[:/]username/.*"]
+
+[personal]
+sshKeyPath = "~/.ssh/personal_key"
+email = "user@example.com"
+userName = "Your Name"
+matchingRepos = ["github\\.com[:/]personal-org/.*"]
+
+[project]
+sshKeyPath = "~/.ssh/project_key"
+email = "user@example.com"
+userName = "Your Name"
+matchingRepos = ["github\\.com[:/]project-org/.*"]

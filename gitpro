@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+
+import os
+import re
+import sys
+import subprocess
+import ast
+from configparser import ConfigParser
+
+
+def run(cmd):
+    return subprocess.check_output(cmd, stderr=subprocess.DEVNULL).decode().strip()
+
+
+def get_repo_root():
+    try:
+        return run(["git", "rev-parse", "--show-toplevel"])
+    except subprocess.CalledProcessError:
+        return None
+
+
+def get_repo_url():
+    try:
+        return run(["git", "remote", "get-url", "origin"])
+    except subprocess.CalledProcessError:
+        return None
+
+
+def load_config():
+    repo_root = get_repo_root()
+    if repo_root:
+        repo_config = os.path.join(repo_root, ".gitpro")
+        if os.path.exists(repo_config):
+            parser = ConfigParser()
+            parser.read(repo_config)
+            return parser
+    
+    config_path = os.path.expanduser("~/.gitpro")
+    if os.path.exists(config_path):
+        parser = ConfigParser()
+        parser.read(config_path)
+        return parser
+    
+    return None
+
+
+def expand(val):
+    return os.path.expanduser(val.strip('"'))
+
+
+def parse_list(val):
+    return ast.literal_eval(val)
+
+
+def select_profile(cfg, repo_url):
+    for section in cfg.sections():
+        if section == "default":
+            continue
+
+        if cfg.has_option(section, "matchingRepos"):
+            patterns = parse_list(cfg.get(section, "matchingRepos"))
+            for p in patterns:
+                if re.search(p, repo_url):
+                    return section
+
+    return "default"
+
+
+def find_url_in_args(args):
+    for arg in args:
+        if re.match(r'(git@|https?://|ssh://)', arg):
+            return arg
+    return None
+
+
+def apply_git_config(profile, cfg):
+    email = cfg.get(profile, "email").strip('"')
+    name = cfg.get(profile, "userName").strip('"')
+
+    subprocess.check_call(["git", "config", "--local", "user.email", email])
+    subprocess.check_call(["git", "config", "--local", "user.name", name])
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: gitpro <git command>", file=sys.stderr)
+        sys.exit(1)
+    
+    git_args = sys.argv[1:]
+    remote_commands = ['clone', 'pull', 'push', 'fetch']
+    url = find_url_in_args(git_args)
+    cfg = load_config()
+    
+    if cfg and git_args[0] in remote_commands:
+        if not url:
+            url = get_repo_url()
+        if url:
+            profile = select_profile(cfg, url)
+            key = expand(cfg.get(profile, "sshKeyPath"))
+            ssh_cmd = f"ssh -i {key} -o IdentitiesOnly=yes"
+            env = os.environ.copy()
+            env['GIT_SSH_COMMAND'] = ssh_cmd
+            
+            result = subprocess.run(['git'] + git_args, env=env)
+            
+            if git_args[0] == 'clone' and result.returncode == 0:
+                # Parse cloned directory
+                if len(git_args) > 2:
+                    cloned_dir = git_args[2]
+                else:
+                    cloned_dir = url.split('/')[-1].replace('.git', '')
+                os.chdir(cloned_dir)
+                apply_git_config(profile, cfg)
+            
+            sys.exit(result.returncode)
+    
+    # No config or not a remote command or no url
+    result = subprocess.run(['git'] + git_args)
+    sys.exit(result.returncode)
+
+
+if __name__ == "__main__":
+    main()
