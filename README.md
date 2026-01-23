@@ -18,8 +18,7 @@ Inspiration for gitpro comes from [multigit](https://github.com/gdsoumya/multigi
 - **Profile-Based Configuration**: Supports multiple profiles (e.g., work, personal) defined in a `.gitpro` config file.
 - **Remote Command Support**: Handles `clone`, `pull`, `push`, and `fetch` commands with URL detection.
 - **Fallback Behavior**: Runs standard Git commands unmodified if no configuration or URL is detected.
-- **Local Config Application**: Applies user email and name locally for cloned repositories.
-- **Flexible Config Location**: Prioritizes repository-specific `.gitpro` over global `~/.gitpro`.
+- **Configuration Location**: Configuration is read from `~/.gitpro` in your home directory.
 
 ## Installation
 
@@ -45,7 +44,7 @@ Inspiration for gitpro comes from [multigit](https://github.com/gdsoumya/multigi
 
 ## Configuration
 
-Create a `.gitpro` file in your home directory (`~/.gitpro`) or in specific repository roots for per-project overrides.
+Create a `.gitpro` file in your home directory (`~/.gitpro`). Repository-specific configuration is no longer supported.
 
 ### Example Configuration
 
@@ -74,7 +73,6 @@ matchingRepos = ["github\\.com[:/]your-username/.*"]
   - `email`: Git user email.
   - `userName`: Git user name.
   - `matchingRepos`: List of regex patterns to match repository URLs (optional, falls back to `default`).
-- **Priority**: Repository-specific `.gitpro` takes precedence over global.
 
 ## Usage
 
@@ -119,7 +117,7 @@ If no command is provided, it runs plain `git`.
 ## Troubleshooting
 
 - **Permission Denied**: Ensure the selected SSH key is loaded (`ssh-add ~/.ssh/your-key`) and matches the repository's requirements.
-- **No Configuration Found**: Verify `.gitpro` exists in the repo root or `~/.gitpro`.
+- **No Configuration Found**: Verify `.gitpro` exists in your home directory (`~/.gitpro`).
 - **URL Not Detected**: For custom remotes, ensure the URL is provided in the command args.
 
 ## Contributing
