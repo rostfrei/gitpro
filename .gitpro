@@ -1,22 +1,22 @@
 [default]
-sshKeyPath = "~/.ssh/default_key"
-email = "user@example.com"
-userName = "Your Name"
+sshKeyPath = "~/.ssh/github_kukovec"
+email = "kukovec@gmail.com"
+userName = "Marko Kukovec"
 
 [work]
-sshKeyPath = "~/.ssh/work_key"
-email = "user@company.com"
-userName = "Your Name"
-matchingRepos = ["github\\.com[:/]org1/.*", "github\\.com[:/]org2/.*", "github\\.com[:/]username/.*"]
+sshKeyPath = "~/.ssh/github_nicehash"
+email = "marko.kukovec@nicehash.com"
+userName = "Marko Kukovec"
+matchingRepos = ["github\\.com[:/]hbitsi/.*", "github\\.com[:/]H-BIT-Stratum/.*", "github\\.com[:/]marko-kukovec/.*"]
 
 [personal]
-sshKeyPath = "~/.ssh/personal_key"
-email = "user@example.com"
-userName = "Your Name"
-matchingRepos = ["github\\.com[:/]personal-org/.*"]
+sshKeyPath = "~/.ssh/github_kukovec"
+email = "kukovec@gmail.com"
+userName = "Marko Kukovec"
+matchingRepos = ["github\\.com[:/]rostfrei/.*"]
 
-[project]
-sshKeyPath = "~/.ssh/project_key"
-email = "user@example.com"
-userName = "Your Name"
-matchingRepos = ["github\\.com[:/]project-org/.*"]
+[cryptoquery]
+sshKeyPath = "~/.ssh/cryptoquery"
+email = "kukovec@gmail.com"
+userName = "Marko Kukovec"
+matchingRepos = ["github\\.com[:/]crypto-query/.*"]
