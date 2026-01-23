@@ -27,20 +27,11 @@ def get_repo_url():
 
 
 def load_config():
-    repo_root = get_repo_root()
-    if repo_root:
-        repo_config = os.path.join(repo_root, ".gitpro")
-        if os.path.exists(repo_config):
-            parser = ConfigParser()
-            parser.read(repo_config)
-            return parser
-    
     config_path = os.path.expanduser("~/.gitpro")
     if os.path.exists(config_path):
         parser = ConfigParser()
         parser.read(config_path)
         return parser
-    
     return None
 
 
