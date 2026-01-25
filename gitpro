@@ -93,6 +93,9 @@ def main():
                 env = os.environ.copy()
                 env['GIT_SSH_COMMAND'] = ssh_cmd
                 
+                # Show repository URL first
+                print(f"gitpro: Repository URL: {url}", file=sys.stderr)
+                
                 # Show profile information if not default
                 if profile != "default":
                     print(f"gitpro: Using profile '{profile}'", file=sys.stderr)
