@@ -52,9 +52,9 @@ def select_profile(cfg, repo_url):
             patterns = parse_list(cfg.get(section, "matchingRepos"))
             for p in patterns:
                 if re.search(p, repo_url):
-                    return section
+                    return section, p
 
-    return "default"
+    return "default", None
 
 
 def find_url_in_args(args):
@@ -87,11 +87,18 @@ def main():
             if not url:
                 url = get_repo_url()
             if url:
-                profile = select_profile(cfg, url)
+                profile, matched_pattern = select_profile(cfg, url)
                 key = expand(cfg.get(profile, "sshKeyPath"))
                 ssh_cmd = f"ssh -i {key} -o IdentitiesOnly=yes"
                 env = os.environ.copy()
                 env['GIT_SSH_COMMAND'] = ssh_cmd
+                
+                # Show profile information if not default
+                if profile != "default":
+                    print(f"gitpro: Using profile '{profile}'", file=sys.stderr)
+                    if matched_pattern:
+                        print(f"gitpro: Matched pattern: {matched_pattern}", file=sys.stderr)
+                    print(f"gitpro: SSH key: {key}", file=sys.stderr)
                 
                 result = subprocess.run(['git'] + git_args, env=env)
                 
