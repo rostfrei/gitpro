@@ -19,9 +19,9 @@ def get_repo_root():
         return None
 
 
-def get_repo_url():
+def get_repo_url(remote_name="origin"):
     try:
-        return run(["git", "remote", "get-url", "origin"])
+        return run(["git", "remote", "get-url", remote_name])
     except subprocess.CalledProcessError:
         return None
 
@@ -64,6 +64,24 @@ def find_url_in_args(args):
     return None
 
 
+def find_remote_in_args(args):
+    """Find the remote name in git command arguments.
+    For push/pull/fetch commands, the remote is typically the first argument after the command.
+    """
+    if len(args) < 2:
+        return None
+    
+    command = args[0]
+    if command in ['push', 'pull', 'fetch']:
+        # The remote name is usually the first argument after the command
+        # unless it starts with a dash (option flag)
+        potential_remote = args[1]
+        if not potential_remote.startswith('-'):
+            return potential_remote
+    
+    return None
+
+
 def apply_git_config(profile, cfg):
     email = cfg.get(profile, "email").strip('"')
     name = cfg.get(profile, "userName").strip('"')
@@ -85,19 +103,26 @@ def main():
         
         if cfg and git_args[0] in remote_commands:
             if not url:
-                url = get_repo_url()
+                # Detect which remote is being used in the command
+                remote_name = find_remote_in_args(git_args)
+                if remote_name:
+                    url = get_repo_url(remote_name)
+                if not url:
+                    # Fallback to origin if remote not found or not specified
+                    url = get_repo_url("origin")
             if url:
                 profile, matched_pattern = select_profile(cfg, url)
-                key = expand(cfg.get(profile, "sshKeyPath"))
-                ssh_cmd = f"ssh -i {key} -o IdentitiesOnly=yes"
-                env = os.environ.copy()
-                env['GIT_SSH_COMMAND'] = ssh_cmd
                 
                 # Show repository URL first
                 print(f"gitpro: Repository URL: {url}", file=sys.stderr)
                 
-                # Show profile information if not default
-                if profile != "default":
+                # Only use custom SSH key if profile is not default and has sshKeyPath
+                env = os.environ.copy()
+                if profile != "default" and cfg.has_option(profile, "sshKeyPath"):
+                    key = expand(cfg.get(profile, "sshKeyPath"))
+                    ssh_cmd = f"ssh -i {key} -o IdentitiesOnly=yes"
+                    env['GIT_SSH_COMMAND'] = ssh_cmd
+                    
                     print(f"gitpro: Using profile '{profile}'", file=sys.stderr)
                     if matched_pattern:
                         print(f"gitpro: Matched pattern: {matched_pattern}", file=sys.stderr)
